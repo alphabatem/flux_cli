@@ -24,6 +24,9 @@ and RugCheck (token validation & security reports).
 All output defaults to JSON for machine consumption. Use --format table for human-readable output.`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		checkForUpdate()
+	},
 }
 
 func Execute() {
