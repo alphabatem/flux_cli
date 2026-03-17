@@ -3,8 +3,8 @@ package services
 import (
 	"fmt"
 
-	"github.com/alphabatem/common/context"
 	"github.com/alphabatem/flux_cli/internal/httpclient"
+	"github.com/alphabatem/flux_cli/pkg/context"
 )
 
 const DATASTREAM_SVC = "datastream_svc"

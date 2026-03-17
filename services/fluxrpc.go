@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/alphabatem/common/context"
 	"github.com/alphabatem/flux_cli/dto"
 	"github.com/alphabatem/flux_cli/internal/httpclient"
+	"github.com/alphabatem/flux_cli/pkg/context"
 )
 
 const FLUXRPC_SVC = "fluxrpc_svc"
