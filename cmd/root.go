@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/alphabatem/flux_cli/dto"
-	"github.com/alphabatem/flux_cli/pkg/conte
+	"github.com/alphabatem/flux_cli/pkg/context"
 	"github.com/alphabatem/flux_cli/services"
 	"github.com/spf13/cobra"
 )
