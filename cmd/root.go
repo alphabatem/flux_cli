@@ -55,6 +55,7 @@ func initContext() {
 		&services.ConfigService{},
 		&services.DataStreamService{},
 		&services.FluxRPCService{},
+		&services.YellowstoneService{},
 		&services.RugCheckService{},
 	)
 	if err != nil {
@@ -98,4 +99,8 @@ func fluxRPCSvc() *services.FluxRPCService {
 
 func rugCheckSvc() *services.RugCheckService {
 	return ctx.Service(services.RUGCHECK_SVC).(*services.RugCheckService)
+}
+
+func yellowstoneSvc() *services.YellowstoneService {
+	return ctx.Service(services.YELLOWSTONE_SVC).(*services.YellowstoneService)
 }
