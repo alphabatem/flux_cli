@@ -3,9 +3,11 @@ package cmd
 import (
 	"os"
 	"strings"
+	"time"
 
 	"github.com/alphabatem/flux_cli/dto"
 	"github.com/alphabatem/flux_cli/internal/httpclient"
+	pb "github.com/alphabatem/flux_cli/internal/yellowstonepb"
 	"github.com/alphabatem/flux_cli/output"
 	"github.com/spf13/cobra"
 )
@@ -31,6 +33,14 @@ func init() {
 
 	rpcTxFeeCmd.Flags().String("commitment", "", "Commitment level")
 	rpcTransactionCmd.AddCommand(rpcTxFeeCmd)
+
+	rpcTxWatchCmd.Flags().String("commitment", "processed", "Commitment level: processed, confirmed, finalized")
+	rpcTxWatchCmd.Flags().String("exclude", "", "Comma-separated excluded accounts")
+	rpcTxWatchCmd.Flags().String("required", "", "Comma-separated required accounts")
+	rpcTxWatchCmd.Flags().Bool("include-votes", false, "Include vote transactions")
+	rpcTxWatchCmd.Flags().Bool("include-failed", false, "Include failed transactions")
+	rpcTxWatchCmd.Flags().Duration("timeout", 0*time.Second, "Optional stream timeout (e.g. 30s, 1m); 0 means no timeout")
+	rpcTransactionCmd.AddCommand(rpcTxWatchCmd)
 }
 
 var rpcTransactionCmd = &cobra.Command{
@@ -114,5 +124,52 @@ var rpcTxFeeCmd = &cobra.Command{
 			os.Exit(httpclient.ExitCodeForError(err))
 		}
 		output.PrintSuccess(cmd, result, &dto.CLIMeta{Service: "fluxrpc", Endpoint: "getFeeForMessage"})
+	},
+}
+
+var rpcTxWatchCmd = &cobra.Command{
+	Use:   "watch <account1,account2,...>",
+	Short: "Stream transaction updates via Yellowstone gRPC",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		commitmentRaw, _ := cmd.Flags().GetString("commitment")
+		commitment, err := parseCommitment(commitmentRaw)
+		if err != nil {
+			failUsage(cmd, err.Error())
+		}
+
+		accountInclude := parseCSV(args[0])
+		if len(accountInclude) == 0 {
+			failUsage(cmd, "at least one include account is required")
+		}
+
+		excludeRaw, _ := cmd.Flags().GetString("exclude")
+		accountExclude := parseCSV(excludeRaw)
+		requiredRaw, _ := cmd.Flags().GetString("required")
+		accountRequired := parseCSV(requiredRaw)
+		includeVotes, _ := cmd.Flags().GetBool("include-votes")
+		includeFailed, _ := cmd.Flags().GetBool("include-failed")
+		streamCtx, cancel, err := streamContextFromTimeoutFlag(cmd)
+		if err != nil {
+			failUsage(cmd, err.Error())
+		}
+		defer cancel()
+
+		err = yellowstoneSvc().WatchTransactions(
+			streamCtx,
+			accountInclude,
+			accountExclude,
+			accountRequired,
+			includeVotes,
+			includeFailed,
+			commitment,
+			func(update *pb.SubscribeUpdate) error {
+				return printWatchUpdate(cmd, "transaction.watch", update)
+			},
+		)
+		if err != nil {
+			output.PrintError(cmd, "WATCH_ERROR", err.Error(), &dto.CLIMeta{Service: "yellowstone", Endpoint: "transaction.watch"})
+			os.Exit(dto.ExitGeneralError)
+		}
 	},
 }

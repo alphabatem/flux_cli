@@ -76,6 +76,13 @@ flux rpc network health --fluxrpc-region eu
 | `us` | `https://us.fluxrpc.com` |
 | `eu` | `https://eu.fluxrpc.com` |
 
+Yellowstone gRPC uses the same `fluxrpc.api_key` and follows region:
+
+| Region | Yellowstone Endpoint |
+|--------|----------------------|
+| `us` | `https://yellowstone.us.fluxrpc.com` |
+| `eu` | `https://yellowstone.eu.fluxrpc.com` |
+
 ### Verify
 
 ```bash
@@ -120,6 +127,9 @@ Every Solana RPC method is an explicit subcommand:
 flux rpc account balance <pubkey>
 flux rpc account show <pubkey> --encoding jsonParsed
 flux rpc account multiple <pubkey1,pubkey2>
+flux rpc account watch <pubkey1,pubkey2> --commitment confirmed --timeout 1m
+flux rpc account watch-program <programId> --timeout 1m
+flux rpc account watch-owner <programId> --timeout 1m
 
 # Blocks
 flux rpc block height
@@ -130,6 +140,9 @@ flux rpc block latest-blockhash
 flux rpc transaction show <signature>
 flux rpc transaction signatures <address> --limit 10
 flux rpc transaction count
+flux rpc transaction watch <account1,account2> --commitment confirmed --timeout 1m
+flux rpc signature watch <signature> --timeout 1m
+flux rpc signature confirm <signature> --commitment confirmed --timeout 30s
 
 # SPL Tokens
 flux rpc token balance <tokenAccount>
@@ -143,6 +156,7 @@ flux rpc network priority-fees
 
 # Slots & Epochs
 flux rpc slot show
+flux rpc slot watch --commitment processed --timeout 1m
 flux rpc epoch info
 
 # Staking

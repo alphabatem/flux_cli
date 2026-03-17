@@ -3,9 +3,11 @@ package cmd
 import (
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/alphabatem/flux_cli/dto"
 	"github.com/alphabatem/flux_cli/internal/httpclient"
+	pb "github.com/alphabatem/flux_cli/internal/yellowstonepb"
 	"github.com/alphabatem/flux_cli/output"
 	"github.com/spf13/cobra"
 )
@@ -24,6 +26,11 @@ func init() {
 	rpcSlotCmd.AddCommand(rpcSlotMaxRetransmitCmd)
 	rpcSlotCmd.AddCommand(rpcSlotMaxShredCmd)
 	rpcSlotCmd.AddCommand(rpcSlotHighestSnapshotCmd)
+
+	rpcSlotWatchCmd.Flags().String("commitment", "processed", "Commitment level: processed, confirmed, finalized")
+	rpcSlotWatchCmd.Flags().Bool("interslot-updates", false, "Include intra-slot status updates")
+	rpcSlotWatchCmd.Flags().Duration("timeout", 0*time.Second, "Optional stream timeout (e.g. 30s, 1m); 0 means no timeout")
+	rpcSlotCmd.AddCommand(rpcSlotWatchCmd)
 }
 
 var rpcSlotCmd = &cobra.Command{
@@ -132,5 +139,32 @@ var rpcSlotHighestSnapshotCmd = &cobra.Command{
 			os.Exit(httpclient.ExitCodeForError(err))
 		}
 		output.PrintSuccess(cmd, result, &dto.CLIMeta{Service: "fluxrpc", Endpoint: "getHighestSnapshotSlot"})
+	},
+}
+
+var rpcSlotWatchCmd = &cobra.Command{
+	Use:   "watch",
+	Short: "Stream slot updates via Yellowstone gRPC",
+	Run: func(cmd *cobra.Command, args []string) {
+		commitmentRaw, _ := cmd.Flags().GetString("commitment")
+		commitment, err := parseCommitment(commitmentRaw)
+		if err != nil {
+			failUsage(cmd, err.Error())
+		}
+
+		interslotUpdates, _ := cmd.Flags().GetBool("interslot-updates")
+		streamCtx, cancel, err := streamContextFromTimeoutFlag(cmd)
+		if err != nil {
+			failUsage(cmd, err.Error())
+		}
+		defer cancel()
+
+		err = yellowstoneSvc().WatchSlots(streamCtx, commitment, interslotUpdates, func(update *pb.SubscribeUpdate) error {
+			return printWatchUpdate(cmd, "slot.watch", update)
+		})
+		if err != nil {
+			output.PrintError(cmd, "WATCH_ERROR", err.Error(), &dto.CLIMeta{Service: "yellowstone", Endpoint: "slot.watch"})
+			os.Exit(dto.ExitGeneralError)
+		}
 	},
 }
