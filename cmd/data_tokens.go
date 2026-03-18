@@ -25,16 +25,6 @@ func init() {
 	dataTokensCandlesCmd.Flags().Int("count", 100, "Number of candles")
 	dataTokensCmd.AddCommand(dataTokensCandlesCmd)
 
-	dataTokensHoldersCmd.Flags().Int("limit", 100, "Number of holders (max 100)")
-	dataTokensHoldersCmd.Flags().Int("page", 0, "Page number")
-	dataTokensCmd.AddCommand(dataTokensHoldersCmd)
-
-	dataTokensHoldersTopCmd.Flags().Int("limit", 100, "Number of top holders (max 1000)")
-	dataTokensCmd.AddCommand(dataTokensHoldersTopCmd)
-
-	dataTokensCmd.AddCommand(dataTokensHoldersDistCmd)
-	dataTokensCmd.AddCommand(dataTokensHoldersCountCmd)
-
 	dataTokensTradersCmd.Flags().Int("limit", 100, "Number of traders (max 100)")
 	dataTokensTradersCmd.Flags().Int("page", 0, "Page number")
 	dataTokensCmd.AddCommand(dataTokensTradersCmd)
@@ -51,7 +41,7 @@ func init() {
 
 var dataTokensCmd = &cobra.Command{
 	Use:   "tokens",
-	Short: "Token data - details, candles, holders, traders, trades",
+	Short: "Token data - details, candles, traders, trades, price, stats",
 }
 
 var dataTokensListCmd = &cobra.Command{
@@ -107,65 +97,6 @@ var dataTokensCandlesCmd = &cobra.Command{
 		to, _ := cmd.Flags().GetInt64("to")
 		count, _ := cmd.Flags().GetInt("count")
 		result, err := dataStreamSvc().GetTokenCandles(args[0], interval, from, to, count)
-		if err != nil {
-			output.PrintError(cmd, "API_ERROR", err.Error(), &dto.CLIMeta{Service: "datastream"})
-			os.Exit(httpclient.ExitCodeForError(err))
-		}
-		output.PrintSuccess(cmd, result, &dto.CLIMeta{Service: "datastream"})
-	},
-}
-
-var dataTokensHoldersCmd = &cobra.Command{
-	Use:   "holders <mint>",
-	Short: "Get holders for a token",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		limit, _ := cmd.Flags().GetInt("limit")
-		page, _ := cmd.Flags().GetInt("page")
-		result, err := dataStreamSvc().GetTokenHolders(args[0], limit, page)
-		if err != nil {
-			output.PrintError(cmd, "API_ERROR", err.Error(), &dto.CLIMeta{Service: "datastream"})
-			os.Exit(httpclient.ExitCodeForError(err))
-		}
-		output.PrintSuccess(cmd, result, &dto.CLIMeta{Service: "datastream"})
-	},
-}
-
-var dataTokensHoldersTopCmd = &cobra.Command{
-	Use:   "holders-top <mint>",
-	Short: "Get top holders for a token sorted by balance",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		limit, _ := cmd.Flags().GetInt("limit")
-		result, err := dataStreamSvc().GetTokenHoldersTop(args[0], limit)
-		if err != nil {
-			output.PrintError(cmd, "API_ERROR", err.Error(), &dto.CLIMeta{Service: "datastream"})
-			os.Exit(httpclient.ExitCodeForError(err))
-		}
-		output.PrintSuccess(cmd, result, &dto.CLIMeta{Service: "datastream"})
-	},
-}
-
-var dataTokensHoldersDistCmd = &cobra.Command{
-	Use:   "holders-distribution <mint>",
-	Short: "Get holder distribution for a token",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		result, err := dataStreamSvc().GetTokenHoldersDistribution(args[0])
-		if err != nil {
-			output.PrintError(cmd, "API_ERROR", err.Error(), &dto.CLIMeta{Service: "datastream"})
-			os.Exit(httpclient.ExitCodeForError(err))
-		}
-		output.PrintSuccess(cmd, result, &dto.CLIMeta{Service: "datastream"})
-	},
-}
-
-var dataTokensHoldersCountCmd = &cobra.Command{
-	Use:   "holders-count <mint>",
-	Short: "Get holder count for a token",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		result, err := dataStreamSvc().GetTokenHoldersCount(args[0])
 		if err != nil {
 			output.PrintError(cmd, "API_ERROR", err.Error(), &dto.CLIMeta{Service: "datastream"})
 			os.Exit(httpclient.ExitCodeForError(err))

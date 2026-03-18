@@ -27,10 +27,6 @@ func init() {
 	rpcAccountMultipleCmd.Flags().String("commitment", "", "Commitment level")
 	rpcAccountCmd.AddCommand(rpcAccountMultipleCmd)
 
-	rpcAccountProgramCmd.Flags().String("encoding", "jsonParsed", "Data encoding")
-	rpcAccountProgramCmd.Flags().String("commitment", "", "Commitment level")
-	rpcAccountProgramCmd.Flags().String("filters", "", "JSON array of filters")
-	rpcAccountCmd.AddCommand(rpcAccountProgramCmd)
 
 	rpcAccountRentExemptionCmd.Flags().String("commitment", "", "Commitment level")
 	rpcAccountCmd.AddCommand(rpcAccountRentExemptionCmd)
@@ -43,18 +39,11 @@ func init() {
 	rpcAccountWatchCmd.Flags().Duration("timeout", 0*time.Second, "Optional stream timeout (e.g. 30s, 1m); 0 means no timeout")
 	rpcAccountCmd.AddCommand(rpcAccountWatchCmd)
 
-	rpcAccountWatchProgramCmd.Flags().String("commitment", "processed", "Commitment level: processed, confirmed, finalized")
-	rpcAccountWatchProgramCmd.Flags().Duration("timeout", 0*time.Second, "Optional stream timeout (e.g. 30s, 1m); 0 means no timeout")
-	rpcAccountCmd.AddCommand(rpcAccountWatchProgramCmd)
-
-	rpcAccountWatchOwnerCmd.Flags().String("commitment", "processed", "Commitment level: processed, confirmed, finalized")
-	rpcAccountWatchOwnerCmd.Flags().Duration("timeout", 0*time.Second, "Optional stream timeout (e.g. 30s, 1m); 0 means no timeout")
-	rpcAccountCmd.AddCommand(rpcAccountWatchOwnerCmd)
 }
 
 var rpcAccountCmd = &cobra.Command{
 	Use:   "account",
-	Short: "Account methods - info, balance, program accounts, rent exemption",
+	Short: "Account methods - info, balance, rent exemption, watch",
 }
 
 var rpcAccountShowCmd = &cobra.Command{
@@ -105,22 +94,6 @@ var rpcAccountMultipleCmd = &cobra.Command{
 	},
 }
 
-var rpcAccountProgramCmd = &cobra.Command{
-	Use:   "program <programId>",
-	Short: "Get all accounts owned by a program (getProgramAccounts)",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		encoding, _ := cmd.Flags().GetString("encoding")
-		filters, _ := cmd.Flags().GetString("filters")
-		commitment, _ := cmd.Flags().GetString("commitment")
-		result, err := fluxRPCSvc().GetProgramAccounts(args[0], encoding, filters, commitment)
-		if err != nil {
-			output.PrintError(cmd, "RPC_ERROR", err.Error(), &dto.CLIMeta{Service: "fluxrpc", Endpoint: "getProgramAccounts"})
-			os.Exit(httpclient.ExitCodeForError(err))
-		}
-		output.PrintSuccess(cmd, result, &dto.CLIMeta{Service: "fluxrpc", Endpoint: "getProgramAccounts"})
-	},
-}
 
 var rpcAccountRentExemptionCmd = &cobra.Command{
 	Use:   "rent-exemption <dataLength>",
@@ -189,66 +162,3 @@ var rpcAccountWatchCmd = &cobra.Command{
 	},
 }
 
-var rpcAccountWatchProgramCmd = &cobra.Command{
-	Use:   "watch-program <programId1,programId2,...>",
-	Short: "Stream updates for all accounts owned by program(s) via Yellowstone gRPC",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		commitmentRaw, _ := cmd.Flags().GetString("commitment")
-		commitment, err := parseCommitment(commitmentRaw)
-		if err != nil {
-			failUsage(cmd, err.Error())
-		}
-
-		owners := parseCSV(args[0])
-		if len(owners) == 0 {
-			failUsage(cmd, "at least one program id is required")
-		}
-
-		streamCtx, cancel, err := streamContextFromTimeoutFlag(cmd)
-		if err != nil {
-			failUsage(cmd, err.Error())
-		}
-		defer cancel()
-
-		err = yellowstoneSvc().WatchProgramOwners(streamCtx, owners, commitment, func(update *pb.SubscribeUpdate) error {
-			return printWatchUpdate(cmd, "account.watch-program", update)
-		})
-		if err != nil {
-			output.PrintError(cmd, "WATCH_ERROR", err.Error(), &dto.CLIMeta{Service: "yellowstone", Endpoint: "account.watch-program"})
-			os.Exit(dto.ExitGeneralError)
-		}
-	},
-}
-
-var rpcAccountWatchOwnerCmd = &cobra.Command{
-	Use:   "watch-owner <owner1,owner2,...>",
-	Short: "Stream updates for accounts owned by owner/program via Yellowstone gRPC",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		commitmentRaw, _ := cmd.Flags().GetString("commitment")
-		commitment, err := parseCommitment(commitmentRaw)
-		if err != nil {
-			failUsage(cmd, err.Error())
-		}
-
-		owners := parseCSV(args[0])
-		if len(owners) == 0 {
-			failUsage(cmd, "at least one owner is required")
-		}
-
-		streamCtx, cancel, err := streamContextFromTimeoutFlag(cmd)
-		if err != nil {
-			failUsage(cmd, err.Error())
-		}
-		defer cancel()
-
-		err = yellowstoneSvc().WatchProgramOwners(streamCtx, owners, commitment, func(update *pb.SubscribeUpdate) error {
-			return printWatchUpdate(cmd, "account.watch-owner", update)
-		})
-		if err != nil {
-			output.PrintError(cmd, "WATCH_ERROR", err.Error(), &dto.CLIMeta{Service: "yellowstone", Endpoint: "account.watch-owner"})
-			os.Exit(dto.ExitGeneralError)
-		}
-	},
-}
