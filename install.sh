@@ -4,6 +4,7 @@ set -euo pipefail
 REPO="alphabatem/flux_cli"
 BINARY_NAME="flux"
 INSTALL_DIR="/usr/local/bin"
+TMP_DIR=""
 
 # Colors
 RED='\033[0;31m'
@@ -14,6 +15,14 @@ NC='\033[0m'
 info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
+
+cleanup() {
+    if [ -n "${TMP_DIR:-}" ]; then
+        rm -rf "$TMP_DIR"
+    fi
+}
+
+trap cleanup EXIT
 
 # Detect OS and architecture
 detect_platform() {
@@ -53,7 +62,7 @@ main() {
         error "curl is required but not installed"
     fi
 
-    local platform version download_url tmp_dir archive_name
+    local platform version download_url archive_name
 
     platform=$(detect_platform)
     info "Detected platform: ${platform}"
@@ -71,17 +80,16 @@ main() {
     download_url="https://github.com/${REPO}/releases/download/${version}/${archive_name}"
 
     # Download to temp directory
-    tmp_dir=$(mktemp -d)
-    trap 'rm -rf "$tmp_dir"' EXIT
+    TMP_DIR=$(mktemp -d)
 
     info "Downloading ${download_url}..."
-    if ! curl -fsSL -o "${tmp_dir}/${archive_name}" "$download_url"; then
+    if ! curl -fsSL -o "${TMP_DIR}/${archive_name}" "$download_url"; then
         error "Download failed. Check that release ${version} exists at https://github.com/${REPO}/releases"
     fi
 
     # Extract
     info "Extracting..."
-    cd "$tmp_dir"
+    cd "$TMP_DIR"
     if [[ "$ext" == "tar.gz" ]]; then
         tar xzf "$archive_name"
     else
@@ -90,9 +98,9 @@ main() {
 
     # Find the binary
     local binary_path
-    binary_path=$(find "$tmp_dir" -name "$BINARY_NAME" -type f | head -1)
+    binary_path=$(find "$TMP_DIR" -name "$BINARY_NAME" -type f | head -1)
     if [ -z "$binary_path" ]; then
-        binary_path=$(find "$tmp_dir" -name "${BINARY_NAME}.exe" -type f | head -1)
+        binary_path=$(find "$TMP_DIR" -name "${BINARY_NAME}.exe" -type f | head -1)
     fi
     if [ -z "$binary_path" ]; then
         error "Binary not found in archive"
