@@ -8,6 +8,19 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -17,15 +30,26 @@ jobs:
           go-version: "1.24"
 
       - name: Build
-        run: go build -o flux .
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          BINARY_NAME=flux
+          if [ "$GOOS" = "windows" ]; then
+            BINARY_NAME=flux.exe
+          fi
+          go build -o "${BINARY_NAME}" .
 
       - name: Vet
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
         run: go vet ./...
 
       - name: Test
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
         run: go test ./...
 
       - name: Verify help output
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
         run: |
           ./flux version
           ./flux --help
