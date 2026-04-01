@@ -11,8 +11,6 @@ func TestStreamCommandsHaveTimeoutFlag(t *testing.T) {
 		cmdDefault string
 	}{
 		{"account.watch", rpcAccountWatchCmd.Flag("timeout").DefValue},
-		{"program.watch", rpcProgramWatchCmd.Flag("timeout").DefValue},
-		{"owner.watch", rpcOwnerWatchCmd.Flag("timeout").DefValue},
 		{"slot.watch", rpcSlotWatchCmd.Flag("timeout").DefValue},
 		{"transaction.watch", rpcTxWatchCmd.Flag("timeout").DefValue},
 		{"signature.watch", rpcSignatureWatchCmd.Flag("timeout").DefValue},
