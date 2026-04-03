@@ -31,7 +31,7 @@ var rpcSignatureCmd = &cobra.Command{
 var rpcSignatureWatchCmd = &cobra.Command{
 	Use:   "watch <signature>",
 	Short: "Stream updates for a specific transaction signature via Yellowstone gRPC",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		commitmentRaw, _ := cmd.Flags().GetString("commitment")
 		commitment, err := parseCommitment(commitmentRaw)
@@ -58,7 +58,7 @@ var rpcSignatureWatchCmd = &cobra.Command{
 var rpcSignatureConfirmCmd = &cobra.Command{
 	Use:   "confirm <signature>",
 	Short: "Wait for transaction confirmation via Yellowstone gRPC",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		commitmentRaw, _ := cmd.Flags().GetString("commitment")
 		commitment, err := parseCommitment(commitmentRaw)

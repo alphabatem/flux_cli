@@ -128,7 +128,7 @@ var rpcNetworkPerformanceCmd = &cobra.Command{
 var rpcNetworkPriorityFeesCmd = &cobra.Command{
 	Use:   "priority-fees [addr1,addr2,...]",
 	Short: "Get recent prioritization fees (getRecentPrioritizationFees)",
-	Args:  cobra.MaximumNArgs(1),
+	Args:  maximumArgsFromUse(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var addresses []string
 		if len(args) > 0 {

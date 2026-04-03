@@ -27,7 +27,6 @@ func init() {
 	rpcAccountMultipleCmd.Flags().String("commitment", "", "Commitment level")
 	rpcAccountCmd.AddCommand(rpcAccountMultipleCmd)
 
-
 	rpcAccountRentExemptionCmd.Flags().String("commitment", "", "Commitment level")
 	rpcAccountCmd.AddCommand(rpcAccountRentExemptionCmd)
 
@@ -49,7 +48,7 @@ var rpcAccountCmd = &cobra.Command{
 var rpcAccountShowCmd = &cobra.Command{
 	Use:   "show <pubkey>",
 	Short: "Get account info (getAccountInfo)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		encoding, _ := cmd.Flags().GetString("encoding")
 		commitment, _ := cmd.Flags().GetString("commitment")
@@ -65,7 +64,7 @@ var rpcAccountShowCmd = &cobra.Command{
 var rpcAccountBalanceCmd = &cobra.Command{
 	Use:   "balance <pubkey>",
 	Short: "Get account balance in lamports (getBalance)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		commitment, _ := cmd.Flags().GetString("commitment")
 		result, err := fluxRPCSvc().GetBalance(args[0], commitment)
@@ -80,7 +79,7 @@ var rpcAccountBalanceCmd = &cobra.Command{
 var rpcAccountMultipleCmd = &cobra.Command{
 	Use:   "multiple <pubkey1,pubkey2,...>",
 	Short: "Get multiple accounts in one request (getMultipleAccounts)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		pubkeys := strings.Split(args[0], ",")
 		encoding, _ := cmd.Flags().GetString("encoding")
@@ -94,11 +93,10 @@ var rpcAccountMultipleCmd = &cobra.Command{
 	},
 }
 
-
 var rpcAccountRentExemptionCmd = &cobra.Command{
 	Use:   "rent-exemption <dataLength>",
 	Short: "Get minimum lamports for rent exemption (getMinimumBalanceForRentExemption)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		length, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
@@ -133,7 +131,7 @@ var rpcAccountLargestCmd = &cobra.Command{
 var rpcAccountWatchCmd = &cobra.Command{
 	Use:   "watch <pubkey1,pubkey2,...>",
 	Short: "Stream account updates via Yellowstone gRPC",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		commitmentRaw, _ := cmd.Flags().GetString("commitment")
 		commitment, err := parseCommitment(commitmentRaw)
@@ -161,4 +159,3 @@ var rpcAccountWatchCmd = &cobra.Command{
 		}
 	},
 }
-

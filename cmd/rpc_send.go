@@ -35,7 +35,7 @@ var rpcSendCmd = &cobra.Command{
 var rpcSendTxCmd = &cobra.Command{
 	Use:   "transaction <base64Tx>",
 	Short: "Submit a signed transaction (sendTransaction)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		encoding, _ := cmd.Flags().GetString("encoding")
 		skipPreflight, _ := cmd.Flags().GetBool("skip-preflight")
@@ -52,7 +52,7 @@ var rpcSendTxCmd = &cobra.Command{
 var rpcSendSimulateCmd = &cobra.Command{
 	Use:   "simulate <base64Tx>",
 	Short: "Simulate a transaction without broadcasting (simulateTransaction)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		encoding, _ := cmd.Flags().GetString("encoding")
 		sigVerify, _ := cmd.Flags().GetBool("sig-verify")
@@ -69,7 +69,7 @@ var rpcSendSimulateCmd = &cobra.Command{
 var rpcSendAirdropCmd = &cobra.Command{
 	Use:   "airdrop <pubkey> <lamports>",
 	Short: "Request an airdrop (requestAirdrop)",
-	Args:  cobra.ExactArgs(2),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		lamports, err := strconv.ParseUint(args[1], 10, 64)
 		if err != nil {

@@ -40,6 +40,9 @@ Sign up at [fluxrpc.com](https://fluxrpc.com) to get API keys for each product:
 Set your keys via the CLI, environment variables, or flags:
 
 ```bash
+# First run interactive setup
+flux config init
+
 # Via CLI (persisted to ~/.flux-cli/config.json)
 flux config set fluxrpc.api_key YOUR_KEY
 flux config set datastream.api_key YOUR_KEY
@@ -55,6 +58,8 @@ flux data tokens get <mint> --datastream-api-key YOUR_KEY
 ```
 
 Priority: CLI flag > environment variable > config file.
+
+On the first interactive run, `flux` will prompt you for API keys, default FluxRPC region, and output format if no config file exists yet. Press Enter to skip any key.
 
 ### Select RPC Region
 
@@ -101,7 +106,7 @@ flux data prices So11111111111111111111111111111111111111112
 # Token info
 flux data tokens get <mint>
 flux data tokens details <mint>
-flux data tokens candles <mint> --interval 5 --count 100
+flux data tokens candles <mint> --interval 1 --count 10
 flux data tokens holders <mint>
 flux data tokens holders-top <mint>
 flux data tokens trades <mint> --limit 50

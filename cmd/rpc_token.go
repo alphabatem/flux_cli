@@ -42,7 +42,7 @@ var rpcTokenCmd = &cobra.Command{
 var rpcTokenBalanceCmd = &cobra.Command{
 	Use:   "balance <tokenAccount>",
 	Short: "Get token account balance (getTokenAccountBalance)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		commitment, _ := cmd.Flags().GetString("commitment")
 		result, err := fluxRPCSvc().GetTokenAccountBalance(args[0], commitment)
@@ -57,7 +57,7 @@ var rpcTokenBalanceCmd = &cobra.Command{
 var rpcTokenAccountsByOwnerCmd = &cobra.Command{
 	Use:   "accounts-by-owner <owner>",
 	Short: "Get token accounts owned by address (getTokenAccountsByOwner)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		mint, _ := cmd.Flags().GetString("mint")
 		program, _ := cmd.Flags().GetString("program")
@@ -83,7 +83,7 @@ var rpcTokenAccountsByOwnerCmd = &cobra.Command{
 var rpcTokenAccountsByDelegateCmd = &cobra.Command{
 	Use:   "accounts-by-delegate <delegate>",
 	Short: "Get token accounts delegated to address (getTokenAccountsByDelegate)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		mint, _ := cmd.Flags().GetString("mint")
 		program, _ := cmd.Flags().GetString("program")
@@ -109,7 +109,7 @@ var rpcTokenAccountsByDelegateCmd = &cobra.Command{
 var rpcTokenLargestCmd = &cobra.Command{
 	Use:   "largest <mint>",
 	Short: "Get 20 largest token accounts for a mint (getTokenLargestAccounts)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		commitment, _ := cmd.Flags().GetString("commitment")
 		result, err := fluxRPCSvc().GetTokenLargestAccounts(args[0], commitment)
@@ -124,7 +124,7 @@ var rpcTokenLargestCmd = &cobra.Command{
 var rpcTokenSupplyCmd = &cobra.Command{
 	Use:   "supply <mint>",
 	Short: "Get total token supply (getTokenSupply)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		commitment, _ := cmd.Flags().GetString("commitment")
 		result, err := fluxRPCSvc().GetTokenSupply(args[0], commitment)

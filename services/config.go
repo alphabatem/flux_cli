@@ -71,6 +71,26 @@ func (s *ConfigService) ConfigPath() string {
 	return s.configPath
 }
 
+func (s *ConfigService) Exists() bool {
+	if s.configPath == "" {
+		return false
+	}
+	_, err := os.Stat(s.configPath)
+	return err == nil
+}
+
+func (s *ConfigService) SaveConfig(cfg dto.Config) error {
+	if cfg.FluxRPC.Region != "" && cfg.FluxRPC.Region != "us" && cfg.FluxRPC.Region != "eu" {
+		return fmt.Errorf("invalid region: %s (must be 'eu' or 'us')", cfg.FluxRPC.Region)
+	}
+	if cfg.Output.Format != "" && cfg.Output.Format != "json" && cfg.Output.Format != "table" {
+		return fmt.Errorf("invalid output format: %s (must be 'json' or 'table')", cfg.Output.Format)
+	}
+
+	s.cfg = cfg
+	return s.save()
+}
+
 // Set updates a config value by dot-notation key (e.g. "datastream.api_key").
 func (s *ConfigService) Set(key, value string) error {
 	parts := strings.SplitN(key, ".", 2)

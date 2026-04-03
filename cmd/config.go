@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/alphabatem/flux_cli/dto"
 	"github.com/alphabatem/flux_cli/output"
@@ -35,23 +37,36 @@ Available keys:
   rugcheck.api_key      RugCheck API key
   rugcheck.base_url     RugCheck base URL
   output.format         Default output format (json or table)`,
-	Args: cobra.ExactArgs(2),
+	Args: exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := configSvc().Set(args[0], args[1]); err != nil {
 			output.PrintError(cmd, "CONFIG_ERROR", err.Error(), nil)
 			os.Exit(dto.ExitConfigError)
 		}
-		output.PrintSuccess(cmd, map[string]string{
-			"key":   args[0],
-			"value": args[1],
-		}, nil)
+
+		if cmd.Flags().Changed("format") {
+			output.PrintSuccess(cmd, map[string]string{
+				"key":   args[0],
+				"value": args[1],
+			}, nil)
+			return
+		}
+
+		fmt.Println(formatConfigSetConfirmation(args[0], args[1]))
 	},
+}
+
+func formatConfigSetConfirmation(key, value string) string {
+	if strings.HasSuffix(key, ".api_key") {
+		return fmt.Sprintf("Set %s", key)
+	}
+	return fmt.Sprintf("Set %s=%s", key, value)
 }
 
 var configGetCmd = &cobra.Command{
 	Use:   "get <key>",
 	Short: "Get a configuration value",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		value, err := configSvc().Get(args[0])
 		if err != nil {

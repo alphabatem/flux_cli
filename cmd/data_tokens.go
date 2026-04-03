@@ -19,10 +19,10 @@ func init() {
 	dataTokensCmd.AddCommand(dataTokensGetCmd)
 	dataTokensCmd.AddCommand(dataTokensDetailsCmd)
 
-	dataTokensCandlesCmd.Flags().String("interval", "5", "Candle interval")
+	dataTokensCandlesCmd.Flags().String("interval", "1", "Candle interval")
 	dataTokensCandlesCmd.Flags().Int64("from", 0, "Start timestamp")
 	dataTokensCandlesCmd.Flags().Int64("to", 0, "End timestamp")
-	dataTokensCandlesCmd.Flags().Int("count", 100, "Number of candles")
+	dataTokensCandlesCmd.Flags().Int("count", 10, "Number of candles")
 	dataTokensCmd.AddCommand(dataTokensCandlesCmd)
 
 	dataTokensTradersCmd.Flags().Int("limit", 100, "Number of traders (max 100)")
@@ -62,7 +62,7 @@ var dataTokensListCmd = &cobra.Command{
 var dataTokensGetCmd = &cobra.Command{
 	Use:   "get <mint>",
 	Short: "Get token by mint address",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		result, err := dataStreamSvc().GetToken(args[0])
 		if err != nil {
@@ -76,7 +76,7 @@ var dataTokensGetCmd = &cobra.Command{
 var dataTokensDetailsCmd = &cobra.Command{
 	Use:   "details <mint>",
 	Short: "Get extended token details with price and market cap",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		result, err := dataStreamSvc().GetTokenDetails(args[0])
 		if err != nil {
@@ -90,7 +90,7 @@ var dataTokensDetailsCmd = &cobra.Command{
 var dataTokensCandlesCmd = &cobra.Command{
 	Use:   "candles <mint>",
 	Short: "Get OHLCV candle data for a token",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		interval, _ := cmd.Flags().GetString("interval")
 		from, _ := cmd.Flags().GetInt64("from")
@@ -108,7 +108,7 @@ var dataTokensCandlesCmd = &cobra.Command{
 var dataTokensTradersCmd = &cobra.Command{
 	Use:   "traders <mint>",
 	Short: "Get trader stats for a token",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		limit, _ := cmd.Flags().GetInt("limit")
 		page, _ := cmd.Flags().GetInt("page")
@@ -124,7 +124,7 @@ var dataTokensTradersCmd = &cobra.Command{
 var dataTokensTradesCmd = &cobra.Command{
 	Use:   "trades <mint>",
 	Short: "Get trade history for a token",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		limit, _ := cmd.Flags().GetInt("limit")
 		from, _ := cmd.Flags().GetInt64("from")
@@ -141,7 +141,7 @@ var dataTokensTradesCmd = &cobra.Command{
 var dataTokensPriceCmd = &cobra.Command{
 	Use:   "price <mint>",
 	Short: "Get current price for a token",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		result, err := dataStreamSvc().GetTokenPrice(args[0])
 		if err != nil {
@@ -155,7 +155,7 @@ var dataTokensPriceCmd = &cobra.Command{
 var dataTokensMcapCmd = &cobra.Command{
 	Use:   "mcap <mint>",
 	Short: "Get market cap for a token",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		result, err := dataStreamSvc().GetTokenMcap(args[0])
 		if err != nil {
@@ -169,7 +169,7 @@ var dataTokensMcapCmd = &cobra.Command{
 var dataTokensStatsCmd = &cobra.Command{
 	Use:   "stats <mint>",
 	Short: "Get volume change stats for a token",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		result, err := dataStreamSvc().GetTokenStats(args[0])
 		if err != nil {

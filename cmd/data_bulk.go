@@ -12,7 +12,7 @@ import (
 func init() {
 	dataCmd.AddCommand(dataBulkCmd)
 
-	dataBulkCandlesCmd.Flags().String("interval", "5", "Candle interval")
+	dataBulkCandlesCmd.Flags().String("interval", "1", "Candle interval")
 	dataBulkCandlesCmd.Flags().Int64("from", 0, "Start timestamp")
 	dataBulkCandlesCmd.Flags().Int64("to", 0, "End timestamp")
 	dataBulkCandlesCmd.Flags().Int("count", 100, "Number of candles")
@@ -27,7 +27,7 @@ var dataBulkCmd = &cobra.Command{
 var dataBulkCandlesCmd = &cobra.Command{
 	Use:   "candles <mint1,mint2,...>",
 	Short: "Get bulk candle data for multiple tokens",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		interval, _ := cmd.Flags().GetString("interval")
 		from, _ := cmd.Flags().GetInt64("from")

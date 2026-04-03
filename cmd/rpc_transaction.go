@@ -51,7 +51,7 @@ var rpcTransactionCmd = &cobra.Command{
 var rpcTxShowCmd = &cobra.Command{
 	Use:   "show <signature>",
 	Short: "Get transaction details (getTransaction)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		encoding, _ := cmd.Flags().GetString("encoding")
 		commitment, _ := cmd.Flags().GetString("commitment")
@@ -81,7 +81,7 @@ var rpcTxCountCmd = &cobra.Command{
 var rpcTxSignaturesCmd = &cobra.Command{
 	Use:   "signatures <address>",
 	Short: "Get transaction signatures for an address (getSignaturesForAddress)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		limit, _ := cmd.Flags().GetInt("limit")
 		before, _ := cmd.Flags().GetString("before")
@@ -99,7 +99,7 @@ var rpcTxSignaturesCmd = &cobra.Command{
 var rpcTxStatusCmd = &cobra.Command{
 	Use:   "status <sig1,sig2,...>",
 	Short: "Get signature statuses (getSignatureStatuses)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		sigs := strings.Split(args[0], ",")
 		searchHistory, _ := cmd.Flags().GetBool("search-history")
@@ -115,7 +115,7 @@ var rpcTxStatusCmd = &cobra.Command{
 var rpcTxFeeCmd = &cobra.Command{
 	Use:   "fee <base64Message>",
 	Short: "Get fee for a transaction message (getFeeForMessage)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		commitment, _ := cmd.Flags().GetString("commitment")
 		result, err := fluxRPCSvc().GetFeeForMessage(args[0], commitment)
@@ -130,7 +130,7 @@ var rpcTxFeeCmd = &cobra.Command{
 var rpcTxWatchCmd = &cobra.Command{
 	Use:   "watch <account1,account2,...>",
 	Short: "Stream transaction updates via Yellowstone gRPC",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		commitmentRaw, _ := cmd.Flags().GetString("commitment")
 		commitment, err := parseCommitment(commitmentRaw)

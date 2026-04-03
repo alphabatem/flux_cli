@@ -16,7 +16,7 @@ func init() {
 var dataPricesCmd = &cobra.Command{
 	Use:   "prices <mint1,mint2,...>",
 	Short: "Get bulk token prices (max 255 tokens)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		result, err := dataStreamSvc().GetPrices(args[0])
 		if err != nil {

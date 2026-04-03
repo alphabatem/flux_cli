@@ -29,7 +29,7 @@ Examples:
   flux rpc call getHealth
   flux rpc call getBalance '["pubkey123"]'
   flux rpc call getBlock '[12345, {"encoding": "json"}]'`,
-	Args: cobra.RangeArgs(1, 2),
+	Args: rangeArgsFromUse(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
 		method := args[0]
 		var params []interface{}

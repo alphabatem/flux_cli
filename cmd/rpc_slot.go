@@ -69,7 +69,7 @@ var rpcSlotLeaderCmd = &cobra.Command{
 var rpcSlotLeadersCmd = &cobra.Command{
 	Use:   "leaders <startSlot> <limit>",
 	Short: "Get slot leaders for a range (getSlotLeaders)",
-	Args:  cobra.ExactArgs(2),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		start, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {

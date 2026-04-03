@@ -49,7 +49,7 @@ var rpcBlockCmd = &cobra.Command{
 var rpcBlockShowCmd = &cobra.Command{
 	Use:   "show <slot>",
 	Short: "Get block data with transactions (getBlock)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		slot, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
@@ -71,7 +71,7 @@ var rpcBlockShowCmd = &cobra.Command{
 var rpcBlockListCmd = &cobra.Command{
 	Use:   "list <startSlot> [endSlot]",
 	Short: "Get confirmed blocks between slots (getBlocks)",
-	Args:  cobra.RangeArgs(1, 2),
+	Args:  rangeArgsFromUse(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
 		start, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
@@ -99,7 +99,7 @@ var rpcBlockListCmd = &cobra.Command{
 var rpcBlockListLimitCmd = &cobra.Command{
 	Use:   "list-limit <startSlot> <limit>",
 	Short: "Get confirmed blocks starting at slot for up to limit blocks (getBlocksWithLimit)",
-	Args:  cobra.ExactArgs(2),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		start, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
@@ -138,7 +138,7 @@ var rpcBlockHeightCmd = &cobra.Command{
 var rpcBlockTimeCmd = &cobra.Command{
 	Use:   "time <slot>",
 	Short: "Get estimated production time for a block (getBlockTime)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		slot, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
@@ -157,7 +157,7 @@ var rpcBlockTimeCmd = &cobra.Command{
 var rpcBlockCommitmentCmd = &cobra.Command{
 	Use:   "commitment <slot>",
 	Short: "Get commitment status for a block (getBlockCommitment)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		slot, err := strconv.ParseUint(args[0], 10, 64)
 		if err != nil {
@@ -205,7 +205,7 @@ var rpcBlockLatestHashCmd = &cobra.Command{
 var rpcBlockHashValidCmd = &cobra.Command{
 	Use:   "blockhash-valid <blockhash>",
 	Short: "Check if a blockhash is still valid (isBlockhashValid)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		commitment, _ := cmd.Flags().GetString("commitment")
 		result, err := fluxRPCSvc().IsBlockhashValid(args[0], commitment)

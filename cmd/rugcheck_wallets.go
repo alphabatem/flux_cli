@@ -17,7 +17,7 @@ func init() {
 var rugcheckWalletCmd = &cobra.Command{
 	Use:   "wallet <chain> <address>",
 	Short: "Assess wallet risk profile",
-	Args:  cobra.ExactArgs(2),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		result, err := rugCheckSvc().GetWalletRisk(args[0], args[1])
 		if err != nil {

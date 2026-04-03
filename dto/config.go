@@ -36,7 +36,7 @@ func DefaultConfig() Config {
 			Region: "us",
 		},
 		RugCheck: RugCheckConfig{
-			BaseURL: "https://api.rugcheck.xyz",
+			BaseURL: "https://api.rugcheck.xyz/v1",
 		},
 		Output: OutputConfig{
 			Format: "json",

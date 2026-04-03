@@ -55,7 +55,7 @@ var dataTradersTopCmd = &cobra.Command{
 var dataTradersDetailCmd = &cobra.Command{
 	Use:   "detail <wallet>",
 	Short: "Get trader details",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		result, err := dataStreamSvc().GetTraderDetail(args[0])
 		if err != nil {
@@ -69,7 +69,7 @@ var dataTradersDetailCmd = &cobra.Command{
 var dataTradersTokensCmd = &cobra.Command{
 	Use:   "tokens <wallet>",
 	Short: "Get token holdings for a trader",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		limit, _ := cmd.Flags().GetInt("limit")
 		result, err := dataStreamSvc().GetTraderTokens(args[0], limit)
@@ -84,7 +84,7 @@ var dataTradersTokensCmd = &cobra.Command{
 var dataTradersPnLCmd = &cobra.Command{
 	Use:   "pnl <wallet>",
 	Short: "Get PnL summary for a trader",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		limit, _ := cmd.Flags().GetInt("limit")
 		result, err := dataStreamSvc().GetTraderPnL(args[0], limit)
@@ -99,7 +99,7 @@ var dataTradersPnLCmd = &cobra.Command{
 var dataTradersTradesCmd = &cobra.Command{
 	Use:   "trades <wallet>",
 	Short: "Get trade history for a trader",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		limit, _ := cmd.Flags().GetInt("limit")
 		from, _ := cmd.Flags().GetInt64("from")

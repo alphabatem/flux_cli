@@ -58,7 +58,7 @@ var rpcEpochScheduleCmd = &cobra.Command{
 var rpcEpochLeaderScheduleCmd = &cobra.Command{
 	Use:   "leader-schedule [slot]",
 	Short: "Get leader schedule for an epoch (getLeaderSchedule)",
-	Args:  cobra.MaximumNArgs(1),
+	Args:  maximumArgsFromUse(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var slot uint64
 		if len(args) > 0 {

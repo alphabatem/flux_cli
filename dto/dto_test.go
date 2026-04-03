@@ -14,7 +14,7 @@ func TestDefaultConfig(t *testing.T) {
 	if cfg.FluxRPC.Region != "us" {
 		t.Errorf("expected default fluxrpc region us, got %s", cfg.FluxRPC.Region)
 	}
-	if cfg.RugCheck.BaseURL != "https://api.rugcheck.xyz" {
+	if cfg.RugCheck.BaseURL != "https://api.rugcheck.xyz/v1" {
 		t.Errorf("expected default rugcheck URL, got %s", cfg.RugCheck.BaseURL)
 	}
 	if cfg.Output.Format != "json" {

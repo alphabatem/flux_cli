@@ -47,10 +47,14 @@ detect_platform() {
 # Get the latest release tag from GitHub
 get_latest_version() {
     local version
-    version=$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
-    if [ -z "$version" ]; then
+
+    version=$(curl -fsSLI -o /dev/null -w '%{url_effective}' "https://github.com/${REPO}/releases/latest")
+    version="${version##*/}"
+
+    if [ -z "$version" ] || [ "$version" = "latest" ]; then
         error "Failed to fetch latest version. Check https://github.com/${REPO}/releases"
     fi
+
     echo "$version"
 }
 

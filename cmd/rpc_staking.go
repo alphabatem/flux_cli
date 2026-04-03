@@ -94,7 +94,7 @@ var rpcStakingInflationRateCmd = &cobra.Command{
 var rpcStakingInflationRewardCmd = &cobra.Command{
 	Use:   "inflation-reward <addr1,addr2,...>",
 	Short: "Get inflation rewards for addresses (getInflationReward)",
-	Args:  cobra.ExactArgs(1),
+	Args:  exactArgsFromUse(),
 	Run: func(cmd *cobra.Command, args []string) {
 		addresses := strings.Split(args[0], ",")
 		epoch, _ := cmd.Flags().GetUint64("epoch")

@@ -191,6 +191,48 @@ func TestConfigService_ConfigPath(t *testing.T) {
 	}
 }
 
+func TestConfigService_Exists(t *testing.T) {
+	svc := newTestConfigService(t)
+	if svc.Exists() {
+		t.Fatal("expected config to not exist yet")
+	}
+
+	if err := svc.Set("fluxrpc.region", "eu"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !svc.Exists() {
+		t.Fatal("expected config to exist after save")
+	}
+}
+
+func TestConfigService_SaveConfig(t *testing.T) {
+	svc := newTestConfigService(t)
+	cfg := dto.DefaultConfig()
+	cfg.FluxRPC.Region = "eu"
+	cfg.Output.Format = "table"
+	cfg.RugCheck.APIKey = "rc-key"
+
+	if err := svc.SaveConfig(cfg); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	data, err := os.ReadFile(svc.configPath)
+	if err != nil {
+		t.Fatalf("failed to read config file: %v", err)
+	}
+
+	var saved dto.Config
+	if err := json.Unmarshal(data, &saved); err != nil {
+		t.Fatalf("failed to unmarshal config: %v", err)
+	}
+	if saved.FluxRPC.Region != "eu" {
+		t.Fatalf("expected region eu, got %s", saved.FluxRPC.Region)
+	}
+	if saved.Output.Format != "table" {
+		t.Fatalf("expected output format table, got %s", saved.Output.Format)
+	}
+}
+
 func TestRedact(t *testing.T) {
 	tests := []struct {
 		input    string

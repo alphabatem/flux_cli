@@ -51,7 +51,7 @@ func newTestCmd(format string) *cobra.Command {
 func TestPrintJSON_Success(t *testing.T) {
 	cmd := newTestCmd("json")
 	out := captureStdout(t, func() {
-		PrintSuccess(cmd, map[string]string{"key": "value"}, &dto.CLIMeta{Service: "test"})
+		PrintSuccess(cmd, map[string]string{"key": "value"}, &dto.CLIMeta{Service: "test", Endpoint: "/test"})
 	})
 
 	var resp dto.CLIResponse
@@ -143,6 +143,54 @@ func TestPrintJSON_Indented(t *testing.T) {
 	// Check indentation
 	if !strings.Contains(out, "  ") {
 		t.Error("expected indented JSON output")
+	}
+}
+
+func TestPrintJSON_OmitsServiceOnlyMeta(t *testing.T) {
+	cmd := newTestCmd("json")
+	out := captureStdout(t, func() {
+		PrintSuccess(cmd, 1.23, &dto.CLIMeta{Service: "datastream"})
+	})
+
+	var parsed map[string]interface{}
+	if err := json.Unmarshal([]byte(out), &parsed); err != nil {
+		t.Fatalf("failed to parse JSON: %v", err)
+	}
+	if _, exists := parsed["meta"]; exists {
+		t.Fatalf("expected meta to be omitted, got: %s", out)
+	}
+}
+
+func TestPrintJSON_KeepsDetailedMeta(t *testing.T) {
+	cmd := newTestCmd("json")
+	out := captureStdout(t, func() {
+		PrintSuccess(cmd, 1.23, &dto.CLIMeta{Service: "datastream", Endpoint: "/prices"})
+	})
+
+	var parsed map[string]interface{}
+	if err := json.Unmarshal([]byte(out), &parsed); err != nil {
+		t.Fatalf("failed to parse JSON: %v", err)
+	}
+	meta, ok := parsed["meta"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("expected meta to be preserved, got: %s", out)
+	}
+	if meta["service"] != "datastream" {
+		t.Fatalf("expected service to be preserved, got: %v", meta["service"])
+	}
+}
+
+func TestPrintJSON_DoesNotEscapeAngleBrackets(t *testing.T) {
+	cmd := newTestCmd("json")
+	out := captureStdout(t, func() {
+		PrintError(cmd, "USAGE_ERROR", "Usage: flux data tokens candles <mint>", nil)
+	})
+
+	if strings.Contains(out, `\u003c`) || strings.Contains(out, `\u003e`) {
+		t.Fatalf("expected angle brackets to remain unescaped, got: %s", out)
+	}
+	if !strings.Contains(out, "<mint>") {
+		t.Fatalf("expected literal placeholder in output, got: %s", out)
 	}
 }
 

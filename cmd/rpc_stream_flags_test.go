@@ -32,3 +32,33 @@ func TestSignatureConfirmTimeoutDefault(t *testing.T) {
 		t.Fatalf("timeout default=%q want=%q", flag.DefValue, (30 * time.Second).String())
 	}
 }
+
+func TestDataTokensCandlesCountDefault(t *testing.T) {
+	flag := dataTokensCandlesCmd.Flag("count")
+	if flag == nil {
+		t.Fatal("data tokens candles count flag missing")
+	}
+	if flag.DefValue != "10" {
+		t.Fatalf("count default=%q want=%q", flag.DefValue, "10")
+	}
+}
+
+func TestDataTokensCandlesIntervalDefault(t *testing.T) {
+	flag := dataTokensCandlesCmd.Flag("interval")
+	if flag == nil {
+		t.Fatal("data tokens candles interval flag missing")
+	}
+	if flag.DefValue != "1" {
+		t.Fatalf("interval default=%q want=%q", flag.DefValue, "1")
+	}
+}
+
+func TestDataBulkCandlesIntervalDefault(t *testing.T) {
+	flag := dataBulkCandlesCmd.Flag("interval")
+	if flag == nil {
+		t.Fatal("data bulk candles interval flag missing")
+	}
+	if flag.DefValue != "1" {
+		t.Fatalf("interval default=%q want=%q", flag.DefValue, "1")
+	}
+}
