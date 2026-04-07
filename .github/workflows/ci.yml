@@ -33,6 +33,7 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
         run: |
           BINARY_NAME=flux
           if [ "$GOOS" = "windows" ]; then
@@ -121,6 +122,7 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
         run: |
           VERSION=${{ needs.tag.outputs.new_tag }}
           COMMIT=$(git rev-parse --short HEAD)
