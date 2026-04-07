@@ -31,9 +31,9 @@ Sign up at [fluxrpc.com](https://fluxrpc.com) to get API keys for each product:
 
 | Product | What it does | Get your key |
 |---------|-------------|--------------|
-| **FluxRPC** | Solana JSON-RPC, Yellowstone gRPC, WebSockets | [fluxrpc.com](https://fluxrpc.com) |
-| **DataStream** | Token prices, trader analytics, market data | [fluxrpc.com](https://fluxrpc.com) |
-| **RugCheck** | Token security reports, wallet risk assessment | [fluxrpc.com](https://fluxrpc.com) |
+| **FluxRPC** | Solana JSON-RPC, Yellowstone gRPC, WebSockets | [fluxrpc.com](https://fluxrpc.com/admin/apikeys) |
+| **DataStream** | Token prices, trader analytics, market data | [fluxrpc.com](https://fluxrpc.com/admin/fluxbeam/apikeys) |
+| **RugCheck** | Token security reports, wallet risk assessment | [fluxrpc.com](https://fluxrpc.com/admin/rugcheck/apikeys) |
 
 ### Configure API Keys
 
