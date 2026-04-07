@@ -16,7 +16,7 @@ func Print(cmd *cobra.Command, response *dto.CLIResponse) {
 	case "table":
 		printTable(response)
 	default:
-		printJSON(response)
+		printJSON(cmd, response)
 	}
 }
 

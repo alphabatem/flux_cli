@@ -71,6 +71,7 @@ func init() {
 	cobra.OnInitialize(initContext)
 
 	rootCmd.PersistentFlags().String("format", "json", "Output format: json or table")
+	rootCmd.PersistentFlags().Bool("json-indent", true, "Indent JSON output")
 	rootCmd.PersistentFlags().String("datastream-api-key", "", "DataStream API key (overrides config/env)")
 	rootCmd.PersistentFlags().String("fluxrpc-api-key", "", "FluxRPC API key (overrides config/env)")
 	rootCmd.PersistentFlags().String("fluxrpc-region", "", "FluxRPC region: eu or us (overrides config/env)")

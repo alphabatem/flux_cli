@@ -45,6 +45,7 @@ func captureStderr(t *testing.T, fn func()) string {
 func newTestCmd(format string) *cobra.Command {
 	cmd := &cobra.Command{Use: "test"}
 	cmd.Flags().String("format", format, "")
+	cmd.Flags().Bool("json-indent", true, "")
 	return cmd
 }
 
@@ -155,6 +156,23 @@ func TestPrintJSON_OmitsMeta(t *testing.T) {
 	}
 	if _, exists := parsed["meta"]; exists {
 		t.Fatalf("expected meta to be omitted, got: %s", out)
+	}
+}
+
+func TestPrintJSON_Compact(t *testing.T) {
+	cmd := newTestCmd("json")
+	if err := cmd.Flags().Set("json-indent", "false"); err != nil {
+		t.Fatalf("set json-indent: %v", err)
+	}
+	out := captureStdout(t, func() {
+		PrintSuccess(cmd, map[string]string{"a": "1"}, nil)
+	})
+
+	if strings.Contains(out, "\n  ") {
+		t.Fatalf("expected compact JSON output, got: %s", out)
+	}
+	if !strings.HasPrefix(strings.TrimSpace(out), `{"success":true`) {
+		t.Fatalf("expected compact JSON object, got: %s", out)
 	}
 }
 
