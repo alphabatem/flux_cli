@@ -59,7 +59,6 @@ type watchTransactionInfoOutput struct {
 	Signature   string                      `json:"signature"`
 	IsVote      bool                        `json:"isVote"`
 	Transaction *watchTransactionBodyOutput `json:"transaction,omitempty"`
-	Meta        *watchTransactionMetaOutput `json:"meta,omitempty"`
 	Index       uint64                      `json:"index"`
 }
 
@@ -95,60 +94,8 @@ type watchAddressTableLookupOutput struct {
 	ReadonlyIndexes string `json:"readonlyIndexes"`
 }
 
-type watchTransactionMetaOutput struct {
-	Err                     *watchTransactionErrorOutput   `json:"err,omitempty"`
-	Fee                     uint64                         `json:"fee"`
-	PreBalances             []uint64                       `json:"preBalances,omitempty"`
-	PostBalances            []uint64                       `json:"postBalances,omitempty"`
-	InnerInstructions       []watchInnerInstructionsOutput `json:"innerInstructions,omitempty"`
-	InnerInstructionsNone   bool                           `json:"innerInstructionsNone"`
-	LogMessages             []string                       `json:"logMessages,omitempty"`
-	LogMessagesNone         bool                           `json:"logMessagesNone"`
-	PreTokenBalances        []watchTokenBalanceOutput      `json:"preTokenBalances,omitempty"`
-	PostTokenBalances       []watchTokenBalanceOutput      `json:"postTokenBalances,omitempty"`
-	Rewards                 []watchRewardOutput            `json:"rewards,omitempty"`
-	LoadedWritableAddresses []string                       `json:"loadedWritableAddresses,omitempty"`
-	LoadedReadonlyAddresses []string                       `json:"loadedReadonlyAddresses,omitempty"`
-	ReturnData              *watchReturnDataOutput         `json:"returnData,omitempty"`
-	ReturnDataNone          bool                           `json:"returnDataNone"`
-	ComputeUnitsConsumed    *uint64                        `json:"computeUnitsConsumed,omitempty"`
-	CostUnits               *uint64                        `json:"costUnits,omitempty"`
-}
-
-type watchInnerInstructionsOutput struct {
-	Index        uint32                        `json:"index"`
-	Instructions []watchInnerInstructionOutput `json:"instructions,omitempty"`
-}
-
-type watchInnerInstructionOutput struct {
-	ProgramIDIndex uint32  `json:"programIdIndex"`
-	Accounts       string  `json:"accounts"`
-	Data           string  `json:"data"`
-	StackHeight    *uint32 `json:"stackHeight,omitempty"`
-}
-
-type watchTokenBalanceOutput struct {
-	AccountIndex  uint32                    `json:"accountIndex"`
-	Mint          string                    `json:"mint"`
-	UITokenAmount *watchUITokenAmountOutput `json:"uiTokenAmount,omitempty"`
-	Owner         string                    `json:"owner"`
-	ProgramID     string                    `json:"programId"`
-}
-
-type watchUITokenAmountOutput struct {
-	UIAmount       float64 `json:"uiAmount"`
-	Decimals       uint32  `json:"decimals"`
-	Amount         string  `json:"amount"`
-	UIAmountString string  `json:"uiAmountString"`
-}
-
 type watchTransactionErrorOutput struct {
 	Err string `json:"err"`
-}
-
-type watchReturnDataOutput struct {
-	ProgramID string `json:"programId"`
-	Data      string `json:"data"`
 }
 
 type watchTransactionStatusOutput struct {

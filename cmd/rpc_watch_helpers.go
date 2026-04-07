@@ -5,7 +5,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/alphabatem/flux_cli/dto"
@@ -155,7 +157,6 @@ func transactionInfoToData(info *pb.SubscribeUpdateTransactionInfo) *watchTransa
 		Signature:   signatureString(info.GetSignature()),
 		IsVote:      info.GetIsVote(),
 		Transaction: transactionToData(info.GetTransaction()),
-		Meta:        transactionMetaToData(info.GetMeta()),
 		Index:       info.GetIndex(),
 	}
 }
@@ -231,38 +232,6 @@ func addressTableLookupToData(lookup *pb.MessageAddressTableLookup) watchAddress
 		WritableIndexes: base64.StdEncoding.EncodeToString(lookup.GetWritableIndexes()),
 		ReadonlyIndexes: base64.StdEncoding.EncodeToString(lookup.GetReadonlyIndexes()),
 	}
-}
-
-func transactionMetaToData(meta *pb.TransactionStatusMeta) *watchTransactionMetaOutput {
-	if meta == nil {
-		return nil
-	}
-	data := &watchTransactionMetaOutput{
-		Err:                     transactionErrorToData(meta.GetErr()),
-		Fee:                     meta.GetFee(),
-		PreBalances:             meta.GetPreBalances(),
-		PostBalances:            meta.GetPostBalances(),
-		InnerInstructions:       innerInstructionsListToData(meta.GetInnerInstructions()),
-		InnerInstructionsNone:   meta.GetInnerInstructionsNone(),
-		LogMessages:             meta.GetLogMessages(),
-		LogMessagesNone:         meta.GetLogMessagesNone(),
-		PreTokenBalances:        tokenBalancesToData(meta.GetPreTokenBalances()),
-		PostTokenBalances:       tokenBalancesToData(meta.GetPostTokenBalances()),
-		Rewards:                 rewardsListToData(meta.GetRewards()),
-		LoadedWritableAddresses: publicKeysToStrings(meta.GetLoadedWritableAddresses()),
-		LoadedReadonlyAddresses: publicKeysToStrings(meta.GetLoadedReadonlyAddresses()),
-		ReturnData:              returnDataToData(meta.GetReturnData()),
-		ReturnDataNone:          meta.GetReturnDataNone(),
-	}
-	if meta.ComputeUnitsConsumed != nil {
-		value := meta.GetComputeUnitsConsumed()
-		data.ComputeUnitsConsumed = &value
-	}
-	if meta.CostUnits != nil {
-		value := meta.GetCostUnits()
-		data.CostUnits = &value
-	}
-	return data
 }
 
 func transactionStatusUpdateToData(update *pb.SubscribeUpdateTransactionStatus) *watchTransactionStatusOutput {
@@ -348,77 +317,6 @@ func entryUpdateToData(entry *pb.SubscribeUpdateEntry) *watchEntryOutput {
 	}
 }
 
-func innerInstructionsListToData(items []*pb.InnerInstructions) []watchInnerInstructionsOutput {
-	out := make([]watchInnerInstructionsOutput, 0, len(items))
-	for _, item := range items {
-		out = append(out, innerInstructionsToData(item))
-	}
-	return out
-}
-
-func innerInstructionsToData(item *pb.InnerInstructions) watchInnerInstructionsOutput {
-	if item == nil {
-		return watchInnerInstructionsOutput{}
-	}
-	instructions := make([]watchInnerInstructionOutput, 0, len(item.GetInstructions()))
-	for _, ix := range item.GetInstructions() {
-		instructions = append(instructions, innerInstructionToData(ix))
-	}
-	return watchInnerInstructionsOutput{
-		Index:        item.GetIndex(),
-		Instructions: instructions,
-	}
-}
-
-func innerInstructionToData(ix *pb.InnerInstruction) watchInnerInstructionOutput {
-	if ix == nil {
-		return watchInnerInstructionOutput{}
-	}
-	data := watchInnerInstructionOutput{
-		ProgramIDIndex: ix.GetProgramIdIndex(),
-		Accounts:       base64.StdEncoding.EncodeToString(ix.GetAccounts()),
-		Data:           base64.StdEncoding.EncodeToString(ix.GetData()),
-	}
-	if ix.StackHeight != nil {
-		value := ix.GetStackHeight()
-		data.StackHeight = &value
-	}
-	return data
-}
-
-func tokenBalancesToData(items []*pb.TokenBalance) []watchTokenBalanceOutput {
-	out := make([]watchTokenBalanceOutput, 0, len(items))
-	for _, item := range items {
-		out = append(out, tokenBalanceToData(item))
-	}
-	return out
-}
-
-func tokenBalanceToData(item *pb.TokenBalance) watchTokenBalanceOutput {
-	if item == nil {
-		return watchTokenBalanceOutput{}
-	}
-	return watchTokenBalanceOutput{
-		AccountIndex:  item.GetAccountIndex(),
-		Mint:          item.GetMint(),
-		UITokenAmount: uiTokenAmountToData(item.GetUiTokenAmount()),
-		Owner:         item.GetOwner(),
-		ProgramID:     item.GetProgramId(),
-	}
-}
-
-func uiTokenAmountToData(item *pb.UiTokenAmount) *watchUITokenAmountOutput {
-	if item == nil {
-		return nil
-	}
-	return &watchUITokenAmountOutput{
-		UIAmount:       item.GetUiAmount(),
-		Decimals:       item.GetDecimals(),
-		Amount:         item.GetAmount(),
-		UIAmountString: item.GetUiAmountString(),
-	}
-}
-
 func transactionErrorToData(err *pb.TransactionError) *watchTransactionErrorOutput {
 	if err == nil {
 		return nil
@@ -461,16 +359,6 @@ func rewardToData(item *pb.Reward) watchRewardOutput {
 		PostBalance: item.GetPostBalance(),
 		RewardType:  item.GetRewardType().String(),
 		Commission:  item.GetCommission(),
-	}
-}
-
-func returnDataToData(item *pb.ReturnData) *watchReturnDataOutput {
-	if item == nil {
-		return nil
-	}
-	return &watchReturnDataOutput{
-		ProgramID: publicKeyString(item.GetProgramId()),
-		Data:      base64.StdEncoding.EncodeToString(item.GetData()),
 	}
 }
 
@@ -524,9 +412,13 @@ func streamContextFromTimeoutFlag(cmd *cobra.Command) (context.Context, context.
 	if err != nil {
 		return nil, nil, err
 	}
+	signalCtx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
 	if timeout > 0 {
-		ctx, cancel := context.WithTimeout(cmd.Context(), timeout)
-		return ctx, cancel, nil
+		ctx, cancel := context.WithTimeout(signalCtx, timeout)
+		return ctx, func() {
+			cancel()
+			stop()
+		}, nil
 	}
-	return cmd.Context(), func() {}, nil
+	return signalCtx, stop, nil
 }

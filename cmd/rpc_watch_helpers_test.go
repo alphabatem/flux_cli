@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -135,6 +137,14 @@ func TestProtoUpdateToDataConvertsTransactionIdentifiersToBase58(t *testing.T) {
 	lookups := message.AddressTableLookups
 	if got := lookups[0].AccountKey; got != repeatOnes(32) {
 		t.Fatalf("accountKey=%v want=%q", got, repeatOnes(32))
+	}
+
+	encoded, err := json.Marshal(root)
+	if err != nil {
+		t.Fatalf("json.Marshal() error = %v", err)
+	}
+	if strings.Contains(string(encoded), `"meta"`) {
+		t.Fatalf("expected watch transaction output to omit meta, got: %s", encoded)
 	}
 }
 

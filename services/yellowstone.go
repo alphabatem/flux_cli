@@ -15,10 +15,12 @@ import (
 	pb "github.com/alphabatem/flux_cli/internal/yellowstonepb"
 	ctxpkg "github.com/alphabatem/flux_cli/pkg/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 const YELLOWSTONE_SVC = "yellowstone_svc"
@@ -211,7 +213,13 @@ func (s *YellowstoneService) streamOnce(ctx stdcontext.Context, req *pb.Subscrib
 	for {
 		update, recvErr := stream.Recv()
 		if recvErr != nil {
+			if ctx.Err() != nil {
+				return nil
+			}
 			if errors.Is(recvErr, io.EOF) {
+				return nil
+			}
+			if st, ok := status.FromError(recvErr); ok && (st.Code() == codes.Canceled || st.Code() == codes.Unavailable) {
 				return nil
 			}
 			return recvErr
