@@ -64,9 +64,6 @@ func TestPrintJSON_Success(t *testing.T) {
 	if resp.Error != nil {
 		t.Error("expected error=nil")
 	}
-	if resp.Meta == nil || resp.Meta.Service != "test" {
-		t.Error("expected meta.service=test")
-	}
 	data, ok := resp.Data.(map[string]interface{})
 	if !ok {
 		t.Fatalf("expected map data, got %T", resp.Data)
@@ -146,22 +143,7 @@ func TestPrintJSON_Indented(t *testing.T) {
 	}
 }
 
-func TestPrintJSON_OmitsServiceOnlyMeta(t *testing.T) {
-	cmd := newTestCmd("json")
-	out := captureStdout(t, func() {
-		PrintSuccess(cmd, 1.23, &dto.CLIMeta{Service: "datastream"})
-	})
-
-	var parsed map[string]interface{}
-	if err := json.Unmarshal([]byte(out), &parsed); err != nil {
-		t.Fatalf("failed to parse JSON: %v", err)
-	}
-	if _, exists := parsed["meta"]; exists {
-		t.Fatalf("expected meta to be omitted, got: %s", out)
-	}
-}
-
-func TestPrintJSON_KeepsDetailedMeta(t *testing.T) {
+func TestPrintJSON_OmitsMeta(t *testing.T) {
 	cmd := newTestCmd("json")
 	out := captureStdout(t, func() {
 		PrintSuccess(cmd, 1.23, &dto.CLIMeta{Service: "datastream", Endpoint: "/prices"})
@@ -171,12 +153,8 @@ func TestPrintJSON_KeepsDetailedMeta(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &parsed); err != nil {
 		t.Fatalf("failed to parse JSON: %v", err)
 	}
-	meta, ok := parsed["meta"].(map[string]interface{})
-	if !ok {
-		t.Fatalf("expected meta to be preserved, got: %s", out)
-	}
-	if meta["service"] != "datastream" {
-		t.Fatalf("expected service to be preserved, got: %v", meta["service"])
+	if _, exists := parsed["meta"]; exists {
+		t.Fatalf("expected meta to be omitted, got: %s", out)
 	}
 }
 

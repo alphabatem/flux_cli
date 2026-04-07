@@ -76,7 +76,7 @@ var rpcSignatureConfirmCmd = &cobra.Command{
 		}
 		defer cancel()
 
-		var matched interface{}
+		var matched *watchUpdateOutput
 		err = yellowstoneSvc().WatchTransactionSignature(ctx, args[0], commitment, func(update *pb.SubscribeUpdate) error {
 			if update.GetTransaction() == nil && update.GetTransactionStatus() == nil {
 				return nil
@@ -85,7 +85,7 @@ var rpcSignatureConfirmCmd = &cobra.Command{
 			if convErr != nil {
 				return convErr
 			}
-			matched = data
+			matched = data.(*watchUpdateOutput)
 			cancel()
 			return nil
 		})
@@ -102,10 +102,10 @@ var rpcSignatureConfirmCmd = &cobra.Command{
 			os.Exit(dto.ExitGeneralError)
 		}
 
-		output.PrintSuccess(cmd, map[string]interface{}{
-			"signature": args[0],
-			"confirmed": true,
-			"update":    matched,
+		output.PrintSuccess(cmd, &watchSignatureConfirmOutput{
+			Signature: args[0],
+			Confirmed: true,
+			Update:    matched,
 		}, &dto.CLIMeta{Service: "yellowstone", Endpoint: "signature.confirm"})
 	},
 }

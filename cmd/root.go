@@ -1,22 +1,25 @@
 package cmd
 
 import (
+	stdcontext "context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/alphabatem/flux_cli/dto"
-	"github.com/alphabatem/flux_cli/pkg/context"
+	ctxpkg "github.com/alphabatem/flux_cli/pkg/context"
 	"github.com/alphabatem/flux_cli/services"
 	"github.com/spf13/cobra"
 )
 
-var ctx *context.Context
+var ctx *ctxpkg.Context
 
 var rootCmd = &cobra.Command{
 	Use:   "flux",
@@ -35,7 +38,10 @@ All output defaults to JSON for machine consumption. Use --format table for huma
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	signalCtx, stop := signal.NotifyContext(stdcontext.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	if err := rootCmd.ExecuteContext(signalCtx); err != nil {
 		code := "CLI_ERROR"
 		exitCode := dto.ExitGeneralError
 
@@ -82,7 +88,7 @@ func initContext() {
 	log.SetOutput(io.Discard)
 
 	var err error
-	ctx, err = context.NewCtx(
+	ctx, err = ctxpkg.NewCtx(
 		&services.ConfigService{},
 		&services.DataStreamService{},
 		&services.FluxRPCService{},

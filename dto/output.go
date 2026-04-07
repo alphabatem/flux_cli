@@ -6,7 +6,6 @@ type CLIResponse struct {
 	Success bool        `json:"success"`
 	Data    interface{} `json:"data"`
 	Error   *CLIError   `json:"error"`
-	Meta    *CLIMeta    `json:"meta,omitempty"`
 }
 
 type CLIError struct {

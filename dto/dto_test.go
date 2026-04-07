@@ -29,7 +29,6 @@ func TestCLIResponse_MarshalJSON(t *testing.T) {
 	resp := CLIResponse{
 		Success: true,
 		Data:    map[string]string{"key": "value"},
-		Meta:    &CLIMeta{Service: "test", Endpoint: "/test", DurationMs: 100},
 	}
 
 	data, err := json.Marshal(resp)
@@ -45,11 +44,6 @@ func TestCLIResponse_MarshalJSON(t *testing.T) {
 	}
 	if parsed["error"] != nil {
 		t.Error("expected error=null")
-	}
-
-	meta := parsed["meta"].(map[string]interface{})
-	if meta["service"] != "test" {
-		t.Errorf("expected service=test, got %v", meta["service"])
 	}
 }
 
@@ -80,7 +74,7 @@ func TestCLIResponse_ErrorMarshal(t *testing.T) {
 	}
 }
 
-func TestCLIMeta_OmitEmpty(t *testing.T) {
+func TestCLIResponse_HasNoMetaField(t *testing.T) {
 	resp := CLIResponse{
 		Success: true,
 		Data:    "ok",
@@ -91,11 +85,10 @@ func TestCLIMeta_OmitEmpty(t *testing.T) {
 		t.Fatalf("failed to marshal: %v", err)
 	}
 
-	// Meta should be omitted when nil
 	var parsed map[string]interface{}
 	json.Unmarshal(data, &parsed)
 	if _, exists := parsed["meta"]; exists {
-		t.Error("expected meta to be omitted when nil")
+		t.Error("expected meta to be absent")
 	}
 }
 

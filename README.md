@@ -208,12 +208,7 @@ JSON is the default format. Every response follows the same envelope:
 {
   "success": true,
   "data": { ... },
-  "error": null,
-  "meta": {
-    "service": "datastream",
-    "endpoint": "/tokens/...",
-    "duration_ms": 142
-  }
+  "error": null
 }
 ```
 
