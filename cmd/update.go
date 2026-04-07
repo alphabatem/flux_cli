@@ -58,6 +58,10 @@ type githubRelease struct {
 
 // checkForUpdate runs a silent update check on startup.
 func checkForUpdate() {
+	if os.Getenv("FLUX_SKIP_UPDATE") != "" {
+		return
+	}
+
 	updated, newVersion, _ := runUpdate(false)
 	if updated {
 		fmt.Fprintf(os.Stderr, "flux: auto-updated to %s\n", newVersion)
