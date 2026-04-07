@@ -193,6 +193,17 @@ func (s *YellowstoneService) streamOnce(ctx stdcontext.Context, req *pb.Subscrib
 	}
 	defer stream.CloseSend()
 
+	done := make(chan struct{})
+	defer close(done)
+	go func() {
+		select {
+		case <-ctx.Done():
+			// Closing the shared gRPC connection ensures a blocked Recv unblocks promptly on Ctrl-C/timeout.
+			s.disconnect()
+		case <-done:
+		}
+	}()
+
 	if err := stream.Send(req); err != nil {
 		return err
 	}
