@@ -111,16 +111,14 @@ func TestProtoUpdateToDataConvertsTransactionIdentifiersToBase58(t *testing.T) {
 		t.Fatalf("protoUpdateToData() error = %v", err)
 	}
 
-	root := data.(*watchUpdateOutput)
-	tx := root.Transaction
-	txInfo := tx.Transaction
-	message := txInfo.Transaction.Message
+	tx := data.(*watchTransactionUpdateOutput)
+	message := tx.Transaction.Message
 
-	if got := txInfo.Signature; got != repeatOnes(64) {
+	if got := tx.Signature; got != repeatOnes(64) {
 		t.Fatalf("signature=%v want=%q", got, repeatOnes(64))
 	}
 
-	signatures := txInfo.Transaction.Signatures
+	signatures := tx.Transaction.Signatures
 	if got := signatures[0]; got != repeatOnes(64) {
 		t.Fatalf("signatures[0]=%v want=%q", got, repeatOnes(64))
 	}
@@ -139,12 +137,15 @@ func TestProtoUpdateToDataConvertsTransactionIdentifiersToBase58(t *testing.T) {
 		t.Fatalf("accountKey=%v want=%q", got, repeatOnes(32))
 	}
 
-	encoded, err := json.Marshal(root)
+	encoded, err := json.Marshal(tx)
 	if err != nil {
 		t.Fatalf("json.Marshal() error = %v", err)
 	}
 	if strings.Contains(string(encoded), `"meta"`) {
 		t.Fatalf("expected watch transaction output to omit meta, got: %s", encoded)
+	}
+	if strings.Contains(string(encoded), `"filters"`) {
+		t.Fatalf("expected watch transaction output to omit filters, got: %s", encoded)
 	}
 }
 
@@ -169,8 +170,7 @@ func TestProtoUpdateToDataConvertsAccountIdentifiersToBase58(t *testing.T) {
 		t.Fatalf("protoUpdateToData() error = %v", err)
 	}
 
-	root := data.(*watchUpdateOutput)
-	account := root.Account.Account
+	account := data.(*watchAccountUpdateOutput)
 
 	if got := account.Pubkey; got != repeatOnes(32) {
 		t.Fatalf("pubkey=%v want=%q", got, repeatOnes(32))

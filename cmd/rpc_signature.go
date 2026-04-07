@@ -76,7 +76,7 @@ var rpcSignatureConfirmCmd = &cobra.Command{
 		}
 		defer cancel()
 
-		var matched *watchUpdateOutput
+		var matched interface{}
 		err = yellowstoneSvc().WatchTransactionSignature(ctx, args[0], commitment, func(update *pb.SubscribeUpdate) error {
 			if update.GetTransaction() == nil && update.GetTransactionStatus() == nil {
 				return nil
@@ -85,7 +85,7 @@ var rpcSignatureConfirmCmd = &cobra.Command{
 			if convErr != nil {
 				return convErr
 			}
-			matched = data.(*watchUpdateOutput)
+			matched = data
 			cancel()
 			return nil
 		})

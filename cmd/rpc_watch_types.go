@@ -1,35 +1,32 @@
 package cmd
 
-type watchUpdateOutput struct {
-	Filters           []string                      `json:"filters,omitempty"`
-	CreatedAt         string                        `json:"createdAt,omitempty"`
-	Account           *watchAccountUpdateOutput     `json:"account,omitempty"`
-	Slot              *watchSlotUpdateOutput        `json:"slot,omitempty"`
-	Transaction       *watchTransactionUpdateOutput `json:"transaction,omitempty"`
-	TransactionStatus *watchTransactionStatusOutput `json:"transactionStatus,omitempty"`
-	Block             *watchBlockUpdateOutput       `json:"block,omitempty"`
-	BlockMeta         *watchBlockMetaOutput         `json:"blockMeta,omitempty"`
-	Entry             *watchEntryOutput             `json:"entry,omitempty"`
-	Ping              *watchPingOutput              `json:"ping,omitempty"`
-	Pong              *watchPongOutput              `json:"pong,omitempty"`
+type watchPingOutput struct {
+	CreatedAt string `json:"createdAt,omitempty"`
 }
 
-type watchPingOutput struct{}
-
 type watchPongOutput struct {
-	ID int32 `json:"id"`
+	CreatedAt string `json:"createdAt,omitempty"`
+	ID        int32  `json:"id"`
 }
 
 type watchSignatureConfirmOutput struct {
-	Signature string             `json:"signature"`
-	Confirmed bool               `json:"confirmed"`
-	Update    *watchUpdateOutput `json:"update,omitempty"`
+	Signature string      `json:"signature"`
+	Confirmed bool        `json:"confirmed"`
+	Update    interface{} `json:"update,omitempty"`
 }
 
 type watchAccountUpdateOutput struct {
-	Account   *watchAccountInfoOutput `json:"account,omitempty"`
-	Slot      uint64                  `json:"slot"`
-	IsStartup bool                    `json:"isStartup"`
+	CreatedAt    string `json:"createdAt,omitempty"`
+	Slot         uint64 `json:"slot"`
+	IsStartup    bool   `json:"isStartup"`
+	Pubkey       string `json:"pubkey"`
+	Lamports     uint64 `json:"lamports"`
+	Owner        string `json:"owner"`
+	Executable   bool   `json:"executable"`
+	RentEpoch    uint64 `json:"rentEpoch"`
+	Data         string `json:"data"`
+	WriteVersion uint64 `json:"writeVersion"`
+	TxnSignature string `json:"txnSignature,omitempty"`
 }
 
 type watchAccountInfoOutput struct {
@@ -44,6 +41,7 @@ type watchAccountInfoOutput struct {
 }
 
 type watchSlotUpdateOutput struct {
+	CreatedAt string  `json:"createdAt,omitempty"`
 	Slot      uint64  `json:"slot"`
 	Parent    *uint64 `json:"parent,omitempty"`
 	Status    string  `json:"status"`
@@ -51,11 +49,8 @@ type watchSlotUpdateOutput struct {
 }
 
 type watchTransactionUpdateOutput struct {
-	Transaction *watchTransactionInfoOutput `json:"transaction,omitempty"`
+	CreatedAt   string                      `json:"createdAt,omitempty"`
 	Slot        uint64                      `json:"slot"`
-}
-
-type watchTransactionInfoOutput struct {
 	Signature   string                      `json:"signature"`
 	IsVote      bool                        `json:"isVote"`
 	Transaction *watchTransactionBodyOutput `json:"transaction,omitempty"`
@@ -99,6 +94,7 @@ type watchTransactionErrorOutput struct {
 }
 
 type watchTransactionStatusOutput struct {
+	CreatedAt string                       `json:"createdAt,omitempty"`
 	Slot      uint64                       `json:"slot"`
 	Signature string                       `json:"signature"`
 	IsVote    bool                         `json:"isVote"`
@@ -132,22 +128,24 @@ type watchBlockHeightOutput struct {
 }
 
 type watchBlockUpdateOutput struct {
-	Slot                     uint64                       `json:"slot"`
-	Blockhash                string                       `json:"blockhash"`
-	Rewards                  *watchRewardsOutput          `json:"rewards,omitempty"`
-	BlockTime                *watchUnixTimestampOutput    `json:"blockTime,omitempty"`
-	BlockHeight              *watchBlockHeightOutput      `json:"blockHeight,omitempty"`
-	ParentSlot               uint64                       `json:"parentSlot"`
-	ParentBlockhash          string                       `json:"parentBlockhash"`
-	ExecutedTransactionCount uint64                       `json:"executedTransactionCount"`
-	Transactions             []watchTransactionInfoOutput `json:"transactions,omitempty"`
-	UpdatedAccountCount      uint64                       `json:"updatedAccountCount"`
-	Accounts                 []watchAccountInfoOutput     `json:"accounts,omitempty"`
-	EntriesCount             uint64                       `json:"entriesCount"`
-	Entries                  []watchEntryOutput           `json:"entries,omitempty"`
+	CreatedAt                string                         `json:"createdAt,omitempty"`
+	Slot                     uint64                         `json:"slot"`
+	Blockhash                string                         `json:"blockhash"`
+	Rewards                  *watchRewardsOutput            `json:"rewards,omitempty"`
+	BlockTime                *watchUnixTimestampOutput      `json:"blockTime,omitempty"`
+	BlockHeight              *watchBlockHeightOutput        `json:"blockHeight,omitempty"`
+	ParentSlot               uint64                         `json:"parentSlot"`
+	ParentBlockhash          string                         `json:"parentBlockhash"`
+	ExecutedTransactionCount uint64                         `json:"executedTransactionCount"`
+	Transactions             []watchTransactionUpdateOutput `json:"transactions,omitempty"`
+	UpdatedAccountCount      uint64                         `json:"updatedAccountCount"`
+	Accounts                 []watchAccountInfoOutput       `json:"accounts,omitempty"`
+	EntriesCount             uint64                         `json:"entriesCount"`
+	Entries                  []watchEntryOutput             `json:"entries,omitempty"`
 }
 
 type watchBlockMetaOutput struct {
+	CreatedAt                string                    `json:"createdAt,omitempty"`
 	Slot                     uint64                    `json:"slot"`
 	Blockhash                string                    `json:"blockhash"`
 	Rewards                  *watchRewardsOutput       `json:"rewards,omitempty"`
@@ -160,6 +158,7 @@ type watchBlockMetaOutput struct {
 }
 
 type watchEntryOutput struct {
+	CreatedAt                string `json:"createdAt,omitempty"`
 	Slot                     uint64 `json:"slot"`
 	Index                    uint64 `json:"index"`
 	NumHashes                uint64 `json:"numHashes"`

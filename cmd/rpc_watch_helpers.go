@@ -60,45 +60,59 @@ func protoUpdateToData(update *pb.SubscribeUpdate) (interface{}, error) {
 		return nil, fmt.Errorf("nil update")
 	}
 
-	data := &watchUpdateOutput{
-		Filters: update.GetFilters(),
-	}
+	createdAt := ""
 	if ts := update.GetCreatedAt(); ts != nil {
-		data.CreatedAt = ts.AsTime().UTC().Format(time.RFC3339Nano)
+		createdAt = ts.AsTime().UTC().Format(time.RFC3339Nano)
 	}
 
 	switch typed := update.GetUpdateOneof().(type) {
 	case *pb.SubscribeUpdate_Account:
-		data.Account = accountUpdateToData(typed.Account)
+		return accountUpdateToData(createdAt, typed.Account), nil
 	case *pb.SubscribeUpdate_Slot:
-		data.Slot = slotUpdateToData(typed.Slot)
+		return slotUpdateToData(createdAt, typed.Slot), nil
 	case *pb.SubscribeUpdate_Transaction:
-		data.Transaction = transactionUpdateToData(typed.Transaction)
+		return transactionUpdateToData(createdAt, typed.Transaction), nil
 	case *pb.SubscribeUpdate_TransactionStatus:
-		data.TransactionStatus = transactionStatusUpdateToData(typed.TransactionStatus)
+		return transactionStatusUpdateToData(createdAt, typed.TransactionStatus), nil
 	case *pb.SubscribeUpdate_Block:
-		data.Block = blockUpdateToData(typed.Block)
+		return blockUpdateToData(createdAt, typed.Block), nil
 	case *pb.SubscribeUpdate_BlockMeta:
-		data.BlockMeta = blockMetaUpdateToData(typed.BlockMeta)
+		return blockMetaUpdateToData(createdAt, typed.BlockMeta), nil
 	case *pb.SubscribeUpdate_Entry:
-		data.Entry = entryUpdateToData(typed.Entry)
+		return entryUpdateToData(createdAt, typed.Entry), nil
 	case *pb.SubscribeUpdate_Ping:
-		data.Ping = &watchPingOutput{}
+		return &watchPingOutput{CreatedAt: createdAt}, nil
 	case *pb.SubscribeUpdate_Pong:
-		data.Pong = &watchPongOutput{ID: typed.Pong.GetId()}
+		return &watchPongOutput{CreatedAt: createdAt, ID: typed.Pong.GetId()}, nil
 	}
 
-	return data, nil
+	return nil, fmt.Errorf("unsupported update type")
 }
 
-func accountUpdateToData(update *pb.SubscribeUpdateAccount) *watchAccountUpdateOutput {
+func accountUpdateToData(createdAt string, update *pb.SubscribeUpdateAccount) *watchAccountUpdateOutput {
 	if update == nil {
 		return nil
 	}
+	account := accountInfoToData(update.GetAccount())
+	if account == nil {
+		return &watchAccountUpdateOutput{
+			CreatedAt: createdAt,
+			Slot:      update.GetSlot(),
+			IsStartup: update.GetIsStartup(),
+		}
+	}
 	return &watchAccountUpdateOutput{
-		Account:   accountInfoToData(update.GetAccount()),
-		Slot:      update.GetSlot(),
-		IsStartup: update.GetIsStartup(),
+		CreatedAt:    createdAt,
+		Slot:         update.GetSlot(),
+		IsStartup:    update.GetIsStartup(),
+		Pubkey:       account.Pubkey,
+		Lamports:     account.Lamports,
+		Owner:        account.Owner,
+		Executable:   account.Executable,
+		RentEpoch:    account.RentEpoch,
+		Data:         account.Data,
+		WriteVersion: account.WriteVersion,
+		TxnSignature: account.TxnSignature,
 	}
 }
 
@@ -121,13 +135,14 @@ func accountInfoToData(info *pb.SubscribeUpdateAccountInfo) *watchAccountInfoOut
 	return data
 }
 
-func slotUpdateToData(update *pb.SubscribeUpdateSlot) *watchSlotUpdateOutput {
+func slotUpdateToData(createdAt string, update *pb.SubscribeUpdateSlot) *watchSlotUpdateOutput {
 	if update == nil {
 		return nil
 	}
 	data := &watchSlotUpdateOutput{
-		Slot:   update.GetSlot(),
-		Status: update.GetStatus().String(),
+		CreatedAt: createdAt,
+		Slot:      update.GetSlot(),
+		Status:    update.GetStatus().String(),
 	}
 	if update.Parent != nil {
 		parent := update.GetParent()
@@ -139,21 +154,32 @@ func slotUpdateToData(update *pb.SubscribeUpdateSlot) *watchSlotUpdateOutput {
 	return data
 }
 
-func transactionUpdateToData(update *pb.SubscribeUpdateTransaction) *watchTransactionUpdateOutput {
+func transactionUpdateToData(createdAt string, update *pb.SubscribeUpdateTransaction) *watchTransactionUpdateOutput {
 	if update == nil {
 		return nil
 	}
+	tx := transactionInfoToData(update.GetTransaction())
+	if tx == nil {
+		return &watchTransactionUpdateOutput{
+			CreatedAt: createdAt,
+			Slot:      update.GetSlot(),
+		}
+	}
 	return &watchTransactionUpdateOutput{
-		Transaction: transactionInfoToData(update.GetTransaction()),
+		CreatedAt:   createdAt,
 		Slot:        update.GetSlot(),
+		Signature:   tx.Signature,
+		IsVote:      tx.IsVote,
+		Transaction: tx.Transaction,
+		Index:       tx.Index,
 	}
 }
 
-func transactionInfoToData(info *pb.SubscribeUpdateTransactionInfo) *watchTransactionInfoOutput {
+func transactionInfoToData(info *pb.SubscribeUpdateTransactionInfo) *watchTransactionUpdateOutput {
 	if info == nil {
 		return nil
 	}
-	return &watchTransactionInfoOutput{
+	return &watchTransactionUpdateOutput{
 		Signature:   signatureString(info.GetSignature()),
 		IsVote:      info.GetIsVote(),
 		Transaction: transactionToData(info.GetTransaction()),
@@ -234,11 +260,12 @@ func addressTableLookupToData(lookup *pb.MessageAddressTableLookup) watchAddress
 	}
 }
 
-func transactionStatusUpdateToData(update *pb.SubscribeUpdateTransactionStatus) *watchTransactionStatusOutput {
+func transactionStatusUpdateToData(createdAt string, update *pb.SubscribeUpdateTransactionStatus) *watchTransactionStatusOutput {
 	if update == nil {
 		return nil
 	}
 	return &watchTransactionStatusOutput{
+		CreatedAt: createdAt,
 		Slot:      update.GetSlot(),
 		Signature: signatureString(update.GetSignature()),
 		IsVote:    update.GetIsVote(),
@@ -247,11 +274,11 @@ func transactionStatusUpdateToData(update *pb.SubscribeUpdateTransactionStatus) 
 	}
 }
 
-func blockUpdateToData(update *pb.SubscribeUpdateBlock) *watchBlockUpdateOutput {
+func blockUpdateToData(createdAt string, update *pb.SubscribeUpdateBlock) *watchBlockUpdateOutput {
 	if update == nil {
 		return nil
 	}
-	transactions := make([]watchTransactionInfoOutput, 0, len(update.GetTransactions()))
+	transactions := make([]watchTransactionUpdateOutput, 0, len(update.GetTransactions()))
 	for _, tx := range update.GetTransactions() {
 		if item := transactionInfoToData(tx); item != nil {
 			transactions = append(transactions, *item)
@@ -265,11 +292,12 @@ func blockUpdateToData(update *pb.SubscribeUpdateBlock) *watchBlockUpdateOutput 
 	}
 	entries := make([]watchEntryOutput, 0, len(update.GetEntries()))
 	for _, entry := range update.GetEntries() {
-		if item := entryUpdateToData(entry); item != nil {
+		if item := entryUpdateToData("", entry); item != nil {
 			entries = append(entries, *item)
 		}
 	}
 	return &watchBlockUpdateOutput{
+		CreatedAt:                createdAt,
 		Slot:                     update.GetSlot(),
 		Blockhash:                update.GetBlockhash(),
 		Rewards:                  rewardsToData(update.GetRewards()),
@@ -286,11 +314,12 @@ func blockUpdateToData(update *pb.SubscribeUpdateBlock) *watchBlockUpdateOutput 
 	}
 }
 
-func blockMetaUpdateToData(update *pb.SubscribeUpdateBlockMeta) *watchBlockMetaOutput {
+func blockMetaUpdateToData(createdAt string, update *pb.SubscribeUpdateBlockMeta) *watchBlockMetaOutput {
 	if update == nil {
 		return nil
 	}
 	return &watchBlockMetaOutput{
+		CreatedAt:                createdAt,
 		Slot:                     update.GetSlot(),
 		Blockhash:                update.GetBlockhash(),
 		Rewards:                  rewardsToData(update.GetRewards()),
@@ -303,11 +332,12 @@ func blockMetaUpdateToData(update *pb.SubscribeUpdateBlockMeta) *watchBlockMetaO
 	}
 }
 
-func entryUpdateToData(entry *pb.SubscribeUpdateEntry) *watchEntryOutput {
+func entryUpdateToData(createdAt string, entry *pb.SubscribeUpdateEntry) *watchEntryOutput {
 	if entry == nil {
 		return nil
 	}
 	return &watchEntryOutput{
+		CreatedAt:                createdAt,
 		Slot:                     entry.GetSlot(),
 		Index:                    entry.GetIndex(),
 		NumHashes:                entry.GetNumHashes(),
